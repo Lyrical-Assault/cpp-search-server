@@ -59,8 +59,9 @@ public:
     void AddDocument(int document_id, const string& document) {
         ++document_count_;
         const vector<string> words = SplitIntoWordsNoStop(document);
+        const double inv_word_count = 1.0 / words.size();
         for(const string& word : words){
-            documents_[word][document_id] += words.size();//записываем кол-во слов,нужное для вычисления TF
+            documents_[word][document_id] += inv_word_count;
         }
     }
     
@@ -146,8 +147,8 @@ private:
                 continue;
             }
             const double idf = ComputeIDF(word);
-            for (const auto& [id, relevance] : documents_.at(word)) {
-                document_to_relevance[id] += idf*(1/relevance);
+            for (const auto& [id, tf] : documents_.at(word)) {
+                document_to_relevance[id] += idf*tf;
             }
         }
  
@@ -155,7 +156,7 @@ private:
             if (documents_.count(word) == 0) {
                 continue;
             }
-            for (const auto [id, relevance] : documents_.at(word)) {
+            for (const auto [id, _] : documents_.at(word)) {
                 document_to_relevance.erase(id);
             }
         }
