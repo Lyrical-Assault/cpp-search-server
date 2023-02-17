@@ -194,10 +194,7 @@ private:
         if (ratings.empty()) {
             return 0;
         }
-        int rating_sum = 0;
-        for (const int rating : ratings) {
-            rating_sum += rating;
-        }
+        int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
         return rating_sum / static_cast<int>(ratings.size());
     }
 
@@ -308,11 +305,9 @@ void TestAddDoc(){
     const auto found_docs = server.FindTopDocuments("city"s);
     ASSERT_EQUAL_HINT(static_cast<int>(found_docs.size()), 0, "Wrong number of documents!"s);
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
-    const auto found_docs_1 = server.FindTopDocuments("city"s);
-    ASSERT_EQUAL_HINT(static_cast<int>(found_docs_1.size()), 1, "Wrong number of documents!"s);
-    server.AddDocument(2, "black dog in the city"s, DocumentStatus::ACTUAL, {1,2});
-    const auto found_docs_2 = server.FindTopDocuments("city"s);
-    ASSERT_EQUAL_HINT(static_cast<int>(found_docs_2.size()), 2, "Wrong number of documents!"s);
+    ASSERT_EQUAL_HINT(server.GetDocumentCount(), 1, "Wrong number of documents!"s);
+    server.AddDocument(2, "black dog in the city"s, DocumentStatus::ACTUAL, {1, 2});
+    ASSERT_EQUAL_HINT(server.GetDocumentCount(), 2, "Wrong number of documents!"s);
 }
 //Поддержка минус-слов. Документы, содержащие минус-слова поискового запроса, не должны включаться в результаты поиска.
 void TestMinusWords(){
@@ -335,6 +330,7 @@ void TestMinusWords(){
 //Матчинг документов. При матчинге документа по поисковому запросу должны быть возвращены все слова из поискового запроса, присутствующие в документе. Если есть соответствие хотя бы по одному минус-слову, должен возвращаться пустой список слов.
 void TestMatching(){
     SearchServer server;
+    const vector<string> test_words = {"black"s, "dog"s};
     server.SetStopWords("in the"s);
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
     const auto [words, status] = server.MatchDocument("-cat in city"s, 1);
@@ -343,8 +339,7 @@ void TestMatching(){
     server.AddDocument(2, "black dog in the city"s, DocumentStatus::BANNED, {1, 2, 3});
     const auto [words_2, status_2] = server.MatchDocument("the black dog"s, 2);
     ASSERT_EQUAL(static_cast<int>(words_2.size()), 2);
-    ASSERT(words_2[0] == "black"s);
-    ASSERT(words_2[1] == "dog"s);
+    ASSERT(words_2 == test_words);
     ASSERT(status_2 == DocumentStatus::BANNED);
 }
 //Сортировка найденных документов по релевантности. Возвращаемые при поиске документов результаты должны быть отсортированы в порядке убывания релевантности.
@@ -353,7 +348,7 @@ void TestSorting(){
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
     server.AddDocument(2, "dog in the city"s, DocumentStatus::ACTUAL, {1, 2});
     const auto found_docs = server.FindTopDocuments("city"s);
-    ASSERT_EQUAL(static_cast<int>(found_docs.size()),2);
+    ASSERT_EQUAL(static_cast<int>(found_docs.size()), 2);
     const Document& doc0 = found_docs[0];
     const Document& doc1 = found_docs[1];
     ASSERT_HINT(doc0.relevance >= doc1.relevance, "Results are sorted incorrectly!"s);
@@ -365,7 +360,7 @@ void TestComputeRating(){
     SearchServer server;
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, ratings);
     const auto found_docs = server.FindTopDocuments("cat"s);
-    ASSERT_EQUAL(static_cast<int>(found_docs.size()),1);
+    ASSERT_EQUAL(static_cast<int>(found_docs.size()), 1);
     const Document& doc0 = found_docs[0];
     ASSERT_EQUAL_HINT(doc0.rating, res_rating, "Rating is compute incorrectly!"s);
 }
@@ -376,16 +371,14 @@ void TestFiltering(){
     SearchServer server;
     server.AddDocument(doc0_id, "cat in the city"s, DocumentStatus::BANNED, {1, 2, 3});
     server.AddDocument(doc1_id, "black dog and white cat"s, DocumentStatus::ACTUAL, {3, 4});
-    const auto found_docs = server.FindTopDocuments("cat "s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; });
-    ASSERT_EQUAL(static_cast<int>(found_docs.size()),1);
+    const auto found_docs = server.FindTopDocuments("cat"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; });
+    ASSERT_EQUAL(static_cast<int>(found_docs.size()), 1);
     const Document& doc1 = found_docs[0];
     ASSERT_EQUAL_HINT(doc1.id, doc1_id, "Wrong document id!"s);
-    ASSERT_HINT(!found_docs.empty(), "Results of filtering are incorrect!"s);
-    const auto found_docs_2 = server.FindTopDocuments("cat "s, [](int document_id, DocumentStatus status, int rating) { return status == DocumentStatus::BANNED; });
-    ASSERT_EQUAL(static_cast<int>(found_docs_2.size()),1);
+    const auto found_docs_2 = server.FindTopDocuments("cat"s, [](int document_id, DocumentStatus status, int rating) { return status == DocumentStatus::BANNED; });
+    ASSERT_EQUAL(static_cast<int>(found_docs_2.size()), 1);
     const Document& doc0 = found_docs_2[0];
     ASSERT_EQUAL_HINT(doc0.id, doc0_id, "Wrong document id!"s);
-    ASSERT_HINT(!found_docs_2.empty(), "Results of filtering are incorrect!"s);
 }
 //Поиск документов, имеющих заданный статус.
 void TestStatus(){
@@ -416,7 +409,7 @@ void TestComputeRelevance(){
     server.AddDocument(doc0_id, content1, DocumentStatus::ACTUAL, {1, 2, 3});
     server.AddDocument(doc1_id, content2, DocumentStatus::ACTUAL, {3, 4});
     const auto found_docs = server.FindTopDocuments(raw_query);
-    ASSERT_EQUAL(static_cast<int>(found_docs.size()),1);
+    ASSERT_EQUAL(static_cast<int>(found_docs.size()), 1);
     const Document& doc0 = found_docs[0];
     ASSERT_EQUAL_HINT(doc0.id, doc0_id, "Wrong document id!"s);
     ASSERT_HINT(abs(doc0.relevance - (log(server.GetDocumentCount() * 1.0 / 1) * (2.0 / 4))) < EPSILON, "Relevance is compute incorrectly!"s);
@@ -432,4 +425,11 @@ void TestSearchServer() {
     RUN_TEST(TestFiltering);
     RUN_TEST(TestStatus);
     RUN_TEST(TestComputeRelevance);
+}
+
+// --------- Окончание модульных тестов поисковой системы -----------
+
+int main() {
+    TestSearchServer();
+    cout << "Search server testing finished"s << endl;
 }
