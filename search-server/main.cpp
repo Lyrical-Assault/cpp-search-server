@@ -142,9 +142,6 @@ public:
 
     explicit SearchServer(const string& stop_words_text): SearchServer(SplitIntoWords(stop_words_text))
     {
-        if(!IsValidWord(stop_words_text)){
-            throw invalid_argument ("Stop word is not valid!"s);
-        }
     }
 
     void AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
@@ -163,10 +160,7 @@ public:
     template <typename DocumentPredicate>
     vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
         const auto query = ParseQuery(raw_query);
-        if(!query){
-            throw invalid_argument ("Error from FindTopDocuments!"s);
-        }
-        auto matched_documents = FindAllDocuments(query.value(), document_predicate);
+        auto matched_documents = FindAllDocuments(query, document_predicate);
         sort(matched_documents.begin(), matched_documents.end(),
              [](const Document& lhs, const Document& rhs) {
                  if (abs(lhs.relevance - rhs.relevance) < EPSILON) {
@@ -203,10 +197,7 @@ public:
     tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const {
         vector<string> matched_words;
         const auto query = ParseQuery(raw_query);
-        if(!query){
-            throw invalid_argument ("Error from MatchDocument!"s);
-        }
-        for (const string& word : query.value().plus_words) {
+        for (const string& word : query.plus_words) {
             if (word_to_document_freqs_.count(word) == 0) {
                 continue;
             }
@@ -214,7 +205,7 @@ public:
                 matched_words.push_back(word);
             }
         }
-        for (const string& word : query.value().minus_words) {
+        for (const string& word : query.minus_words) {
             if (word_to_document_freqs_.count(word) == 0) {
                 continue;
             }
@@ -273,9 +264,9 @@ private:
         bool is_stop;
     };
 
-    optional<QueryWord> ParseQueryWord(string text) const {
+    QueryWord ParseQueryWord(string text) const {
         if (text.empty()) {
-            return nullopt;
+            throw invalid_argument ("Word is empty!"s);
         }
         string word = text;
         bool is_minus = false;
@@ -284,9 +275,9 @@ private:
             word = word.substr(1);
         }
         if (word.empty() || word[0] == '-' || !IsValidWord(word)) {
-            return nullopt;
+            throw invalid_argument ("Word is not valid!"s);
         }
-        return QueryWord{word, is_minus, IsStopWord(word)};
+        return {word, is_minus, IsStopWord(word)};
     }
 
     struct Query {
@@ -294,18 +285,15 @@ private:
         set<string> minus_words;
     };
 
-    optional<Query> ParseQuery(const string& text) const {
+    Query ParseQuery(const string& text) const {
         Query query;
         for (const string& word : SplitIntoWords(text)) {
             const auto query_word = ParseQueryWord(word);
-            if(!query_word){
-                return nullopt;
-            }
-            if (!query_word.value().is_stop) {
-                if (query_word.value().is_minus) {
-                    query.minus_words.insert(query_word.value().data);
+            if (!query_word.is_stop) {
+                if (query_word.is_minus) {
+                    query.minus_words.insert(query_word.data);
                 } else {
-                    query.plus_words.insert(query_word.value().data);
+                    query.plus_words.insert(query_word.data);
                 }
             }
         }
