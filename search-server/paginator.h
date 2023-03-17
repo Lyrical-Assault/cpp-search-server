@@ -22,7 +22,8 @@ public:
     }
 
 private:
-    Iterator begin_, end_;
+    Iterator begin_;
+    Iterator end_;
     size_t size_;
 };
 
