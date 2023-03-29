@@ -149,7 +149,7 @@ void TestComputeRelevance(){
     ASSERT_EQUAL(static_cast<int>(found_docs.size()), 1);
     const Document& doc0 = found_docs[0];
     ASSERT_EQUAL_HINT(doc0.id, doc0_id, "Wrong document id!"s);
-    ASSERT_HINT(abs(doc0.relevance - (log(server.GetDocumentCount() * 1.0 / 1) * (2.0 / 4))) < EPSILON, "Relevance is compute incorrectly!"s);
+    ASSERT_HINT(std::abs(doc0.relevance - (log(server.GetDocumentCount() * 1.0 / 1) * (2.0 / 4))) < EPSILON, "Relevance is compute incorrectly!"s);
 }
 // Функция TestSearchServer является точкой входа для запуска тестов
 void TestSearchServer(){
