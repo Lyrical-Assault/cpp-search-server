@@ -68,7 +68,7 @@ void TestMinusWords(){
 //Матчинг документов. При матчинге документа по поисковому запросу должны быть возвращены все слова из поискового запроса, присутствующие в документе. Если есть соответствие хотя бы по одному минус-слову, должен возвращаться пустой список слов.
 void TestMatching(){
     SearchServer server("in the"s);
-    const std::vector<std::string> test_words = {"black"s, "dog"s};
+    const std::vector<std::string_view> test_words = {"black"s, "dog"s};
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
     const auto [words, status] = server.MatchDocument("-cat in city"s, 1);
     ASSERT_EQUAL_HINT(static_cast<int>(words.size()), 0, "Document contains minus-word!"s);

@@ -1,11 +1,12 @@
 #pragma once
+
 #include <numeric>
 #include <cassert>
 #include <stdexcept>
+#include <string_view>
 #include "search_server.h"
 
-
-using namespace std::string_literals;
+using std::string_literals::operator""s;
 
 #define ASSERT_EQUAL(a, b) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, ""s)
 
