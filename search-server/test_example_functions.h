@@ -1,10 +1,11 @@
 #pragma once
 
+#include "search_server.h"
+
 #include <numeric>
 #include <cassert>
 #include <stdexcept>
 #include <string_view>
-#include "search_server.h"
 
 using std::string_literals::operator""s;
 
@@ -24,8 +25,8 @@ void RunTestImpl(Func func, const std::string& str_func){
     std::cerr << str_func << " OK"s << std::endl;
 }
 
-void AssertImpl(bool value, const std::string& expr_str, const std::string& file, const std::string& func, unsigned line,
-                const std::string& hint);
+void AssertImpl(bool value, const std::string& expr_str, const std::string& file, 
+                const std::string& func, unsigned line, const std::string& hint);
 
 template <typename T, typename U>
 void AssertEqualImpl(const T& t, const U& u, const std::string& t_str, const std::string& u_str, const std::string& file,
@@ -44,12 +45,21 @@ void AssertEqualImpl(const T& t, const U& u, const std::string& t_str, const std
 }
 
 void TestExcludeStopWordsFromAddedDocumentContent();
+
 void TestAddDoc();
+
 void TestMinusWords();
+
 void TestMatching();
+
 void TestSorting();
+
 void TestComputeRating();
+
 void TestFiltering();
+
 void TestStatus();
+
 void TestComputeRelevance();
+
 void TestSearchServer();

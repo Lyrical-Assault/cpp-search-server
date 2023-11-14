@@ -15,5 +15,5 @@ std::set<std::string, std::less<>> MakeUniqueNonEmptyStrings(const StringContain
     }
     return non_empty_strings;
 }
-std::vector<std::string_view> SplitIntoWords(std::string_view text);
 
+std::vector<std::string_view> SplitIntoWords(std::string_view text);

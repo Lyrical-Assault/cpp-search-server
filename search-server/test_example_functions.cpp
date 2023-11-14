@@ -14,7 +14,7 @@ void AssertImpl(bool value, const std::string& expr_str, const std::string& file
 }
 
 // Тест проверяет, что поисковая система исключает стоп-слова при добавлении документов
-void TestExcludeStopWordsFromAddedDocumentContent(){
+void TestExcludeStopWordsFromAddedDocumentContent() {
     const int doc_id = 42;
     const std::string content = "cat in the city"s;
     const std::vector<int> ratings = {1, 2, 3};
@@ -28,7 +28,6 @@ void TestExcludeStopWordsFromAddedDocumentContent(){
         const Document& doc0 = found_docs[0];
         ASSERT_EQUAL_HINT(doc0.id, doc_id, "Wrong document id!"s);
     }
-
     // Затем убеждаемся, что поиск этого же слова, входящего в список стоп-слов,
     // возвращает пустой результат
     {
@@ -37,8 +36,9 @@ void TestExcludeStopWordsFromAddedDocumentContent(){
         ASSERT_HINT(server.FindTopDocuments("in"s).empty(), "There should be no documents on query which contains only stop-word!"s);
     }
 }
+
 //Добавление документов. Добавленный документ должен находиться по поисковому запросу, который содержит слова из документа.
-void TestAddDoc(){
+void TestAddDoc() {
     SearchServer server("in the"s);
     const auto found_docs = server.FindTopDocuments("city"s);
     ASSERT_EQUAL_HINT(static_cast<int>(found_docs.size()), 0, "Wrong number of documents!"s);
@@ -47,8 +47,9 @@ void TestAddDoc(){
     server.AddDocument(2, "black dog in the city"s, DocumentStatus::ACTUAL, {1, 2});
     ASSERT_EQUAL_HINT(server.GetDocumentCount(), 2, "Wrong number of documents!"s);
 }
+
 //Поддержка минус-слов. Документы, содержащие минус-слова поискового запроса, не должны включаться в результаты поиска.
-void TestMinusWords(){
+void TestMinusWords() {
     SearchServer server("in the"s);
     const int doc0_id = 1;
     const int doc1_id = 2;
@@ -65,8 +66,9 @@ void TestMinusWords(){
     ASSERT_EQUAL_HINT(doc0_2.id, doc0_id, "Wrong document id!"s);
     ASSERT_EQUAL_HINT(doc1_2.id, doc1_id, "Wrong document id!"s);
 }
+
 //Матчинг документов. При матчинге документа по поисковому запросу должны быть возвращены все слова из поискового запроса, присутствующие в документе. Если есть соответствие хотя бы по одному минус-слову, должен возвращаться пустой список слов.
-void TestMatching(){
+void TestMatching() {
     SearchServer server("in the"s);
     const std::vector<std::string_view> test_words = {"black"s, "dog"s};
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
@@ -79,8 +81,9 @@ void TestMatching(){
     ASSERT(words_2 == test_words);
     ASSERT(status_2 == DocumentStatus::BANNED);
 }
+
 //Сортировка найденных документов по релевантности. Возвращаемые при поиске документов результаты должны быть отсортированы в порядке убывания релевантности.
-void TestSorting(){
+void TestSorting() {
     SearchServer server("in the"s);
     server.AddDocument(1, "cat in the city"s, DocumentStatus::ACTUAL, {1, 2, 3});
     server.AddDocument(2, "dog in the city"s, DocumentStatus::ACTUAL, {1, 2});
@@ -90,8 +93,9 @@ void TestSorting(){
     const Document& doc1 = found_docs[1];
     ASSERT_HINT(doc0.relevance >= doc1.relevance, "Results are sorted incorrectly!"s);
 }
+
 //Вычисление рейтинга документов. Рейтинг добавленного документа равен среднему арифметическому оценок документа.
-void TestComputeRating(){
+void TestComputeRating() {
     const std::vector<int> ratings = {1, 2, 3};
     const int res_rating = accumulate(ratings.begin(), ratings.end(), 0)/static_cast<int>(ratings.size());
     SearchServer server("in the"s);
@@ -101,8 +105,9 @@ void TestComputeRating(){
     const Document& doc0 = found_docs[0];
     ASSERT_EQUAL_HINT(doc0.rating, res_rating, "Rating is compute incorrectly!"s);
 }
+
 //Фильтрация результатов поиска с использованием предиката, задаваемого пользователем.
-void TestFiltering(){
+void TestFiltering() {
     const int doc0_id = 1;
     const int doc1_id = 2;
     SearchServer server("in the"s);
@@ -117,8 +122,9 @@ void TestFiltering(){
     const Document& doc0 = found_docs_2[0];
     ASSERT_EQUAL_HINT(doc0.id, doc0_id, "Wrong document id!"s);
 }
+
 //Поиск документов, имеющих заданный статус.
-void TestStatus(){
+void TestStatus() {
     const int doc0_id = 1;
     const int doc1_id = 2;
     SearchServer server("in the"s);
@@ -135,8 +141,9 @@ void TestStatus(){
     const auto found_docs_3 = server.FindTopDocuments("cat"s, DocumentStatus::IRRELEVANT);
     ASSERT_EQUAL_HINT(static_cast<int>(found_docs_3.size()), 0, "There are no documents with this status!"s);
 }
+
 //Корректное вычисление релевантности найденных документов.
-void TestComputeRelevance(){
+void TestComputeRelevance() {
     SearchServer server("in the"s);
     const int doc0_id = 1;
     const int doc1_id = 2;
@@ -151,8 +158,9 @@ void TestComputeRelevance(){
     ASSERT_EQUAL_HINT(doc0.id, doc0_id, "Wrong document id!"s);
     ASSERT_HINT(std::abs(doc0.relevance - (log(server.GetDocumentCount() * 1.0 / 1) * (2.0 / 4))) < EPSILON, "Relevance is compute incorrectly!"s);
 }
+
 // Функция TestSearchServer является точкой входа для запуска тестов
-void TestSearchServer(){
+void TestSearchServer() {
     RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
     RUN_TEST(TestAddDoc);
     RUN_TEST(TestMinusWords);

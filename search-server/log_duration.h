@@ -12,14 +12,11 @@
 
 class LogDuration {
 public:
-    // заменим имя типа std::chrono::steady_clock
-    // с помощью using для удобства
     using Clock = std::chrono::steady_clock;
 
     LogDuration(std::string_view id, std::ostream& dst_stream = std::cerr)
             : id_(id)
-            , dst_stream_(dst_stream) {
-    }
+            , dst_stream_(dst_stream) {}
 
     ~LogDuration() {
         using namespace std::chrono;
@@ -32,6 +29,8 @@ public:
 
 private:
     const std::string id_;
+
     const Clock::time_point start_time_ = Clock::now();
+
     std::ostream& dst_stream_;
 };

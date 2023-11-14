@@ -1,5 +1,6 @@
 #include "search_server.h"
 #include "log_duration.h"
+
 #include <execution>
 #include <iostream>
 #include <random>
@@ -17,6 +18,7 @@ string GenerateWord(mt19937& generator, int max_length) {
     }
     return word;
 }
+
 vector<string> GenerateDictionary(mt19937& generator, int word_count, int max_length) {
     vector<string> words;
     words.reserve(word_count);
@@ -26,6 +28,7 @@ vector<string> GenerateDictionary(mt19937& generator, int word_count, int max_le
     words.erase(unique(words.begin(), words.end()), words.end());
     return words;
 }
+
 string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int word_count, double minus_prob = 0) {
     string query;
     for (int i = 0; i < word_count; ++i) {
@@ -39,6 +42,7 @@ string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int w
     }
     return query;
 }
+
 vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
     vector<string> queries;
     queries.reserve(query_count);
@@ -47,6 +51,7 @@ vector<string> GenerateQueries(mt19937& generator, const vector<string>& diction
     }
     return queries;
 }
+
 template <typename ExecutionPolicy>
 void Test(string_view mark, const SearchServer& search_server, const vector<string>& queries, ExecutionPolicy&& policy) {
     LOG_DURATION(mark);
@@ -58,7 +63,9 @@ void Test(string_view mark, const SearchServer& search_server, const vector<stri
     }
     cout << total_relevance << endl;
 }
+
 #define TEST(policy) Test(#policy, search_server, queries, execution::policy)
+
 int main() {
     mt19937 generator;
     const auto dictionary = GenerateDictionary(generator, 1000, 10);

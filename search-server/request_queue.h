@@ -1,9 +1,10 @@
 #pragma once
 
-#include <algorithm>
-#include <deque>
 #include "document.h"
 #include "search_server.h"
+
+#include <algorithm>
+#include <deque>
 
 class RequestQueue {
 public:
@@ -23,18 +24,22 @@ private:
         std::string request;
         bool isEmptyRequest;
     };
+
     std::deque<QueryResult> requests_;
+
     const static int min_in_day_ = 1440;
+
     int seconds_ = 0;
+
     const SearchServer& search_server_ ;
 };
 
 template <typename DocumentPredicate>
-std::vector<Document> RequestQueue::AddFindRequest(const std::string& raw_query, DocumentPredicate document_predicate){
+std::vector<Document> RequestQueue::AddFindRequest(const std::string& raw_query, DocumentPredicate document_predicate) {
     const std::vector<Document> matched_documents = search_server_.FindTopDocuments(raw_query, document_predicate);
     requests_.push_front({raw_query, matched_documents.empty()});
     ++seconds_;
-    if(seconds_ > min_in_day_){
+    if(seconds_ > min_in_day_) {
         requests_.pop_back();
     }
     return matched_documents;

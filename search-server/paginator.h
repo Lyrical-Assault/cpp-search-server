@@ -5,17 +5,16 @@
 #include <vector>
 
 template <typename Iterator>
-class IteratorRange{
+class IteratorRange {
 public:
     IteratorRange(Iterator begin, Iterator end)
-            : begin_(begin), end_(end), size_(distance(begin_, end_)){
-    }
+            : begin_(begin), end_(end), size_(distance(begin_, end_)) {}
 
-    Iterator begin() const{
+    Iterator begin() const {
         return begin_;
     }
 
-    Iterator end() const{
+    Iterator end() const {
         return end_;
     }
 
@@ -25,13 +24,15 @@ public:
 
 private:
     Iterator begin_;
+
     Iterator end_;
+
     size_t size_;
 };
 
 template <typename Iterator>
-std::ostream& operator<< (std::ostream& out, IteratorRange<Iterator> iteratorRange){
-    for(auto iter = iteratorRange.begin(); iter != iteratorRange.end(); ++iter){
+std::ostream& operator<< (std::ostream& out, IteratorRange<Iterator> iteratorRange) {
+    for(auto iter = iteratorRange.begin(); iter != iteratorRange.end(); ++iter) {
         out << *iter;
     }
     return out;
@@ -50,11 +51,11 @@ public:
         }
     }
 
-    typename std::vector<IteratorRange<Iterator>>::const_iterator begin() const{
+    typename std::vector<IteratorRange<Iterator>>::const_iterator begin() const {
         return paginator_.begin();
     }
 
-    typename std::vector<IteratorRange<Iterator>>::const_iterator end() const{
+    typename std::vector<IteratorRange<Iterator>>::const_iterator end() const {
         return paginator_.end();
     }
 

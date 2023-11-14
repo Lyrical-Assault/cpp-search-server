@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
 #include "document.h"
-#include <execution>
 #include "search_server.h"
+
+#include <vector>
+#include <execution>
 #include <algorithm>
 
 std::vector<std::vector<Document>> ProcessQueries(

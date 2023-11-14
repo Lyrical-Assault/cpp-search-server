@@ -3,15 +3,11 @@
 using namespace std::string_literals;
 
 SearchServer::SearchServer(const std::string& stop_words_text)
-        : SearchServer(std::string_view(stop_words_text))
-{
-}
+        : SearchServer(std::string_view(stop_words_text)) {}
 
 SearchServer::SearchServer(std::string_view stop_words_text)
         : SearchServer(
-        SplitIntoWords(stop_words_text))
-{
-}
+        SplitIntoWords(stop_words_text)) {}
 
 void SearchServer::AddDocument(int document_id, std::string_view document, DocumentStatus status, const std::vector<int>& ratings) {
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
@@ -46,7 +42,7 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
     return MatchDocument(std::execution::seq, raw_query, document_id);
 }
 
-std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(const std::execution::sequenced_policy& policy, std::string_view raw_query, int document_id) const{
+std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(const std::execution::sequenced_policy& policy, std::string_view raw_query, int document_id) const {
     const auto status = documents_.at(document_id).status;
     const auto query = ParseQuery(raw_query);
     std::vector<std::string_view> matched_words;
@@ -69,7 +65,7 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
     return {matched_words, documents_.at(document_id).status};
 }
 
-std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(const std::execution::parallel_policy& policy, std::string_view raw_query, int document_id) const{
+std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(const std::execution::parallel_policy& policy, std::string_view raw_query, int document_id) const {
     const auto query = ParseQuery(raw_query, false);
     std::vector<std::string_view> matched_words;
     matched_words.reserve(query.plus_words.size());
@@ -160,30 +156,29 @@ double SearchServer::ComputeWordInverseDocumentFreq(std::string_view word) const
     return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
 }
 
-typename std::set<int>::const_iterator SearchServer::begin() const{
+typename std::set<int>::const_iterator SearchServer::begin() const {
     return document_ids_.begin();
 }
 
-typename std::set<int>::const_iterator SearchServer::end() const{
+typename std::set<int>::const_iterator SearchServer::end() const {
     return document_ids_.end();
 }
 
-const std::map<std::string_view, double>& SearchServer::GetWordFrequencies(int document_id) const{
-    if(lower_bound(document_ids_.begin(), document_ids_.end(), document_id) != document_ids_.end()){
+const std::map<std::string_view, double>& SearchServer::GetWordFrequencies(int document_id) const {
+    if(lower_bound(document_ids_.begin(), document_ids_.end(), document_id) != document_ids_.end()) {
         return word_freq_.at(document_id);
-    }
-    else{
+    } else {
         static const std::map<std::string_view, double> empty_map;
         return empty_map;
     }
 }
 
-void SearchServer::RemoveDocument(int document_id){
+void SearchServer::RemoveDocument(int document_id) {
     RemoveDocument(std::execution::seq, document_id);
 }
 
-void SearchServer::RemoveDocument(const std::execution::sequenced_policy& policy, int document_id){
-    for(auto [key, value] : word_freq_.at(document_id)){
+void SearchServer::RemoveDocument(const std::execution::sequenced_policy& policy, int document_id) {
+    for(auto [key, value] : word_freq_.at(document_id)) {
         word_to_document_freqs_.at(key).erase(document_id);
     }
     document_ids_.erase(document_id);
@@ -191,7 +186,7 @@ void SearchServer::RemoveDocument(const std::execution::sequenced_policy& policy
     word_freq_.erase(document_id);
 }
 
-void SearchServer::RemoveDocument(const std::execution::parallel_policy& policy, int document_id){
+void SearchServer::RemoveDocument(const std::execution::parallel_policy& policy, int document_id) {
     auto& word_freq = word_freq_.at(document_id);
     std::vector<std::string_view> document_words(word_freq.size());
     std::transform(policy,
