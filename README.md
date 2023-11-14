@@ -19,15 +19,15 @@
 
 Компилируйте, активировав как минимум 17-й стандарт: подойдут флаги --std=c++17, --std=c++2a или --std=c++20.
 
-# Windows
+## Windows
 
 Возьмите самый свежий архив из [Release versions](https://winlibs.com), без пометки «without LLVM/Clang/LLD/LLDB». После распаковки используйте g++ из папки mingw64\bin.
 
-# Unix
+## Unix
 
 Установите следующие пакеты:
 - g++-9 — свежий компилятор;
 - libstdc++-9-dev — свежая реализация стандартной библиотеки;
 - libtbb-dev — вспомогательная библиотека Thread Building Blocks от Intel для реализации параллельности. На macOS используйте [brew](https://github.com/mxcl/homebrew-made?ysclid=loy74xae8q331219416) install tbb.
-Подойдут и более новые версии&
+Подойдут и более новые версии.
 Подключите нужные библиотеки, поставив флаги -ltbb и -lpthread.
